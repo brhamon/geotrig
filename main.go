@@ -16,11 +16,6 @@ const (
 	san_antonio_lat float64 = 29.424122
 	san_antonio_lon float64 = -98.493628
 
-	f5sea_lat  float64 = 47.622505
-	f5sea_lon  float64 = -122.364060
-	vashon_lat float64 = 47.3940239
-	vashon_lon float64 = -122.5286988
-
 	// Result from computation in ellipse.go: eliminates overshoot.
 	compensationFactor float64 = 0.9983242984277140011446146599937898342419651738278666798238725123410681830530906421805472817806713887
 )
@@ -416,13 +411,6 @@ func main() {
 	fmt.Println(fmt.Sprintf("%s: %72.62fm\n    bearing %f", "O to N", s, azimuthToDeg(faz)))
 
 	lat2, lon2, _ := wgs84.Forward(rad(-22.2601287), rad(166.4732082), faz, s/2.0)
-	fmt.Println(fmt.Sprintf("%s: %f, %f", "Midpoint", deg(lat2), deg(lon2)))
-
-	s, faz, _ = wgs84.Inverse(rad(f5sea_lat), rad(f5sea_lon), rad(vashon_lat), rad(vashon_lon))
-	fmt.Println(fmt.Sprintf("%s: %fm\n    bearing %f",
-		"F5 Seattle to Vashon", s, azimuthToDeg(faz)))
-
-	lat2, lon2, _ = wgs84.Forward(rad(f5sea_lat), rad(f5sea_lon), faz, s/2.0)
 	fmt.Println(fmt.Sprintf("%s: %f, %f", "Midpoint", deg(lat2), deg(lon2)))
 
 	doTriangle(

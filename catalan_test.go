@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/big"
 	"testing"
 )
 
@@ -66,8 +65,7 @@ func TestA048881(t *testing.T) {
 
 func TestCatalan(t *testing.T) {
 	for n, entry := range A000108List {
-		var cat big.Int
-		Catalan(&cat, n)
+		cat := Catalan(n)
 		guess := cat.Text(10)
 		if guess != entry {
 			t.Errorf("Incorrect result. For N=%d, expected %s. Got %s.\n",
@@ -79,8 +77,7 @@ func TestCatalan(t *testing.T) {
 
 func TestA002596(t *testing.T) {
 	for n, entry := range A002596List {
-		var cat big.Int
-		A002596(&cat, n)
+		cat := A002596(n)
 		guess := cat.Text(10)
 		if guess != entry {
 			t.Errorf("Incorrect result. For N=%d, expected %s. Got %s.\n",
@@ -92,8 +89,7 @@ func TestA002596(t *testing.T) {
 
 func TestA056981(t *testing.T) {
 	for n, entry := range A056981List {
-		var cat big.Int
-		A056981(&cat, n)
+		cat := A056981(n)
 		guess := cat.Text(10)
 		if guess != entry {
 			t.Errorf("Incorrect result. For N=%d, expected %s. Got %s.\n",
@@ -116,8 +112,7 @@ func TestA005187(t *testing.T) {
 
 func TestA056982(t *testing.T) {
 	for n, entry := range A056982List {
-		var cat big.Int
-		A056982(&cat, n)
+		cat := A056982(n)
 		guess := cat.Text(10)
 		if guess != entry {
 			t.Errorf("Incorrect result. For N=%d, expected %s. Got %s.\n",
@@ -127,12 +122,10 @@ func TestA056982(t *testing.T) {
 	fmt.Printf("Tested first %d entries of A056982.\n", len(A056982List))
 }
 
-//KummerGaussTerm(r *big.Rat, n int) *big.Rat
 func TestKummerGaussTerm(t *testing.T) {
-	var kg big.Rat
 	fmt.Printf("------------ KummerGauss terms ------------\n")
 	for n := 0; n < 100; n++ {
-		KummerGaussTerm(&kg, n)
+		kg := KummerGaussTerm(n)
 		fmt.Printf("%3d: %s\n", n, kg.FloatString(100))
 		if n < len(KGTerm) {
 			guess, _ := kg.Float64()

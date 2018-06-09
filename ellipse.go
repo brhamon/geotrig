@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -134,19 +133,4 @@ func EllipsePerimeter(a float64, b float64) float64 {
 	diff := a - b
 	sum := a + b
 	return KummerGauss((diff*diff)/(sum*sum)) * sum * math.Pi
-}
-
-func ellipse() {
-	ep := CircumferencePrecise(WGS84_a)
-	fmt.Printf(" Equatorial perimeter: %50.42f\n", ep)
-	pp := EllipsePerimeterPrecise(WGS84_a, WGS84_b)
-	fmt.Printf("      Polar perimeter: %50.42f\n", pp)
-	ep /= 4
-	pp /= 4
-	fmt.Printf("90-deg equatorial arc: %50.42f\n", ep)
-	fmt.Printf("     90-deg polar arc: %50.42f\n", pp)
-	fmt.Printf("                error: %50.42f\n", ep-pp)
-	ef := pp / ep
-	fmt.Printf("       scaling factor: %50.42f\n", ef)
-
 }

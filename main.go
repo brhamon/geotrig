@@ -24,18 +24,18 @@ var (
 	MaxIters int = 0
 )
 
-func rad(deg float64) float64 {
+func Rad(deg float64) float64 {
 	return deg * (math.Pi / 180.0)
 }
 
-func deg(rad float64) float64 {
+func Deg(rad float64) float64 {
 	return rad * (180.0 / math.Pi)
 }
 
 type Coord struct {
-	lat  float64
-	lon  float64
-	name string
+	Lat  float64
+	Lon  float64
+	Name string
 }
 
 // Tests if an azimuth is the range [-Pi, Pi)
@@ -47,38 +47,38 @@ func IsAziNormal(azi float64) bool {
 // A normal coordinate's lat is in the range [-90, 90],
 // and its lon is in the range [-180, 180]
 func (c *Coord) IsNormal() bool {
-	return c.lat <= 90.0 && c.lat >= -90.0 && c.lon <= 180.0 && c.lon >= -180.0
+	return c.Lat <= 90.0 && c.Lat >= -90.0 && c.Lon <= 180.0 && c.Lon >= -180.0
 }
 
 // Tests if the Coord is on either pole
 func (c *Coord) IsPolar() bool {
-	return math.Abs(c.lat) == 90.0
+	return math.Abs(c.Lat) == 90.0
 }
 
 // Tests if this Coord is identical to a second
 // All pairs of non-Equal, non-antipodal points have exactly one geodesic
 func (lhs *Coord) Equal(rhs *Coord) bool {
-	return lhs.lat == rhs.lat && lhs.lon == rhs.lon
+	return lhs.Lat == rhs.Lat && lhs.Lon == rhs.Lon
 }
 
 // Tests if this Coord is antipodal with a second Coord.
 // All pairs of non-Equal, non-antipodal points have exactly one geodesic
 func (lhs *Coord) IsAntipodal(rhs *Coord) bool {
-	if lhs.lat+rhs.lat == 0.0 {
-		if math.Abs(lhs.lat) == 90.0 {
+	if lhs.Lat+rhs.Lat == 0.0 {
+		if math.Abs(lhs.Lat) == 90.0 {
 			return true
 		}
-		return math.Abs(lhs.lon-rhs.lon) == 180.0
+		return math.Abs(lhs.Lon-rhs.Lon) == 180.0
 	}
 	return false
 }
 
 func (this *Coord) Antipode() (antipode *Coord) {
-	antipode.lat = -this.lat
-	if this.lon < 0.0 {
-		antipode.lon = this.lon + 180.0
+	antipode.Lat = -this.Lat
+	if this.Lon < 0.0 {
+		antipode.Lon = this.Lon + 180.0
 	} else {
-		antipode.lon = this.lon - 180.0
+		antipode.Lon = this.Lon - 180.0
 	}
 	return
 }
@@ -137,7 +137,7 @@ func normalizeTriangle(in []Coord) (out []Coord, err error) {
 		if i == j {
 			continue
 		}
-		_, tmpAzi, _ := wgs84.Inverse(rad(in[i].lat), rad(in[i].lon), rad(in[j].lat), rad(in[j].lon))
+		_, tmpAzi, _ := wgs84.Inverse(Rad(in[i].Lat), Rad(in[i].Lon), Rad(in[j].Lat), Rad(in[j].Lon))
 		if tmpAzi < 0 {
 			tmpAzi += math.Pi
 		}
@@ -151,8 +151,8 @@ func normalizeTriangle(in []Coord) (out []Coord, err error) {
 	max := -math.MaxFloat64
 	idxA := -1
 	for i = 0; i < 3; i++ {
-		if in[i].lat > max {
-			max = in[i].lat
+		if in[i].Lat > max {
+			max = in[i].Lat
 			idxA = i
 		}
 	}
@@ -162,34 +162,34 @@ func normalizeTriangle(in []Coord) (out []Coord, err error) {
 	out = make([]Coord, 0, 3)
 	out = append(out, in[idxA])
 	idxB := -1
-	if in[idxA].lat == 90.0 {
+	if in[idxA].Lat == 90.0 {
 		// special case: 'A' is North Pole
 		eastMost := -math.MaxFloat64
 		for i = 0; i < 3; i++ {
 			if i == idxA {
 				continue
 			}
-			if in[i].lon > eastMost {
-				eastMost = in[i].lon
+			if in[i].Lon > eastMost {
+				eastMost = in[i].Lon
 				idxB = i
 			}
 		}
 	} else {
 		// do either of the other two points have the same latitude?
-		westMost := in[idxA].lon
+		westMost := in[idxA].Lon
 		for i = 0; i < 3; i++ {
 			if i == idxA {
 				continue
 			}
-			if in[i].lat == in[idxA].lat {
+			if in[i].Lat == in[idxA].Lat {
 				idxB = i
-				if in[i].lon < westMost {
+				if in[i].Lon < westMost {
 					// find the western-most
-					westMost = in[i].lon
+					westMost = in[i].Lon
 				}
 			}
 		}
-		if idxB != -1 && westMost != in[idxA].lon {
+		if idxB != -1 && westMost != in[idxA].Lon {
 			// switch to western-most
 			idxA = idxB
 			out[0] = in[idxA]
@@ -202,7 +202,7 @@ func normalizeTriangle(in []Coord) (out []Coord, err error) {
 			if i == idxA {
 				continue
 			}
-			_, tfaz, _ = wgs84.Inverse(rad(in[idxA].lat), rad(in[idxA].lon), rad(in[i].lat), rad(in[i].lon))
+			_, tfaz, _ = wgs84.Inverse(Rad(in[idxA].Lat), Rad(in[idxA].Lon), Rad(in[i].Lat), Rad(in[i].Lon))
 			az[i] = tfaz
 			// change [-Pi, Pi) -> [0, 2*Pi)
 			if tfaz < 0 {
@@ -257,14 +257,14 @@ func azimuthToDeg(azi float64) float64 {
 	if azi < 0 {
 		azi += 2 * math.Pi
 	}
-	return deg(azi)
+	return Deg(azi)
 }
 
 func displayTriangle(t []Coord) {
 	fmt.Println(fmt.Sprintf("{%f,%f} %s / {%f,%f} %s / {%f,%f} %s",
-		t[0].lat, t[0].lon, t[0].name,
-		t[1].lat, t[1].lon, t[1].name,
-		t[2].lat, t[2].lon, t[2].name))
+		t[0].Lat, t[0].Lon, t[0].Name,
+		t[1].Lat, t[1].Lon, t[1].Name,
+		t[2].Lat, t[2].Lon, t[2].Name))
 }
 
 func displayKmlPath(c []Coord, msg string) {
@@ -282,9 +282,9 @@ func displayKmlPath(c []Coord, msg string) {
 				<coordinates>
 					`, msg, msg))
 		for _, ci := range c {
-			b.WriteString(fmt.Sprintf("%f,%f,0 ", ci.lon, ci.lat))
+			b.WriteString(fmt.Sprintf("%f,%f,0 ", ci.Lon, ci.Lat))
 		}
-		b.WriteString(fmt.Sprintf("%f,%f,0\n", c[0].lon, c[0].lat))
+		b.WriteString(fmt.Sprintf("%f,%f,0\n", c[0].Lon, c[0].Lat))
 		b.WriteString(`			</coordinates>
 			</LineString>
 		</Placemark>
@@ -297,17 +297,17 @@ func displayKmlPath(c []Coord, msg string) {
 func displayGeodesic(cLat float64, cLon float64, azi float64, msg string) {
 	// one-third of Earth's circumference at the Equator
 	step := 2 * math.Pi * wgs84.WGS84_a / 3
-	aLat, aLon, _ := wgs84.Forward(rad(cLat), rad(cLon), azi, step)
+	aLat, aLon, _ := wgs84.Forward(Rad(cLat), Rad(cLon), azi, step)
 	if azi <= 0.0 {
 		azi += math.Pi
 	} else {
 		azi -= math.Pi
 	}
-	bLat, bLon, _ := wgs84.Forward(rad(cLat), rad(cLon), azi, step)
+	bLat, bLon, _ := wgs84.Forward(Rad(cLat), Rad(cLon), azi, step)
 	arr := make([]Coord, 0, 3)
-	arr = append(arr, Coord{deg(bLat), deg(bLon), ""})
-	arr = append(arr, Coord{deg(cLat), deg(cLon), ""})
-	arr = append(arr, Coord{deg(aLat), deg(aLon), ""})
+	arr = append(arr, Coord{Deg(bLat), Deg(bLon), ""})
+	arr = append(arr, Coord{Deg(cLat), Deg(cLon), ""})
+	arr = append(arr, Coord{Deg(aLat), Deg(aLon), ""})
 	displayKmlPath(arr, msg)
 }
 
@@ -337,24 +337,24 @@ func estimateDistToX(distance float64, adjacent float64, opposite float64) float
 }
 
 func triangleCircumcenter(t []Coord) (coord Coord, err error) {
-	accuracy := rad(0.00001 / 3600)
+	accuracy := Rad(0.00001 / 3600)
 	tri, err := normalizeTriangle(t)
 	if err != nil {
 		return
 	}
-	s, faz, _ := wgs84.Inverse(rad(tri[0].lat), rad(tri[0].lon), rad(tri[1].lat), rad(tri[1].lon))
-	m01lat, m01lon, m10azi := wgs84.Forward(rad(tri[0].lat), rad(tri[0].lon), faz, s/2.0)
+	s, faz, _ := wgs84.Inverse(Rad(tri[0].Lat), Rad(tri[0].Lon), Rad(tri[1].Lat), Rad(tri[1].Lon))
+	m01lat, m01lon, m10azi := wgs84.Forward(Rad(tri[0].Lat), Rad(tri[0].Lon), faz, s/2.0)
 	// m10azi is azimuth from the midpoint facing back toward 0. Turn left 90 degrees.
 	m10azi = Rotate(m10azi, -math.Pi/2.0)
 	displayGeodesic(m01lat, m01lon, m10azi, fmt.Sprintf("%s-%s perpendicular midpoint",
-		tri[0].name, tri[1].name))
+		tri[0].Name, tri[1].Name))
 
-	s, faz, _ = wgs84.Inverse(rad(tri[1].lat), rad(tri[1].lon), rad(tri[2].lat), rad(tri[2].lon))
-	m12lat, m12lon, m21azi := wgs84.Forward(rad(tri[1].lat), rad(tri[1].lon), faz, s/2.0)
+	s, faz, _ = wgs84.Inverse(Rad(tri[1].Lat), Rad(tri[1].Lon), Rad(tri[2].Lat), Rad(tri[2].Lon))
+	m12lat, m12lon, m21azi := wgs84.Forward(Rad(tri[1].Lat), Rad(tri[1].Lon), faz, s/2.0)
 	// find the perpendicular geodesic
 	m21azi = Rotate(m21azi, -math.Pi/2.0)
 	displayGeodesic(m12lat, m12lon, m21azi, fmt.Sprintf("%s-%s perpendicular midpoint",
-		tri[1].name, tri[2].name))
+		tri[1].Name, tri[2].Name))
 
 	for count := 0; true; count++ {
 		if math.Abs(m12lat-m01lat) < accuracy && math.Abs(m12lon-m01lon) < accuracy {
@@ -379,7 +379,7 @@ func triangleCircumcenter(t []Coord) (coord Coord, err error) {
 		m21azi = Rotate(m21azi, math.Pi)
 		m10azi = Rotate(m10azi, math.Pi)
 	}
-	coord = Coord{deg(m12lat), deg(m12lon), fmt.Sprintf("circumcenter %s-%s-%s", t[0].name, t[1].name, t[2].name)}
+	coord = Coord{Deg(m12lat), Deg(m12lon), fmt.Sprintf("circumcenter %s-%s-%s", t[0].Name, t[1].Name, t[2].Name)}
 	return
 }
 
@@ -389,30 +389,17 @@ func doTriangle(triangle []Coord) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(fmt.Sprintf("%s: %f, %f", coord.name, coord.lat, coord.lon))
-	displayKmlPath(triangle, fmt.Sprintf("%s-%s-%s", triangle[0].name, triangle[1].name, triangle[2].name))
+	fmt.Println(fmt.Sprintf("%s: %f, %f", coord.Name, coord.Lat, coord.Lon))
+	displayKmlPath(triangle, fmt.Sprintf("%s-%s-%s", triangle[0].Name, triangle[1].Name, triangle[2].Name))
 
 	for i := 0; i < len(triangle); i++ {
-		s, _, _ := wgs84.Inverse(rad(coord.lat), rad(coord.lon), rad(triangle[i].lat), rad(triangle[i].lon))
-		fmt.Println(fmt.Sprintf("cc-to-%s: %fm", triangle[i].name, s))
+		s, _, _ := wgs84.Inverse(Rad(coord.Lat), Rad(coord.Lon), Rad(triangle[i].Lat), Rad(triangle[i].Lon))
+		fmt.Println(fmt.Sprintf("cc-to-%s: %fm", triangle[i].Name, s))
 	}
 }
 
 func main() {
 	calculateEarthParameters()
-	s, faz, _ := wgs84.Inverse(rad(-22.2601287), rad(166.4732082), rad(-23.4337870964), rad(173.6461697836))
-	fmt.Println(fmt.Sprintf("%s: %fm\n    bearing %f",
-		"Noumea Magenta Airport, New Caledonia, to Dec 2016 solstice subsolar point",
-		s, azimuthToDeg(faz)))
-	s, faz, _ = wgs84.Inverse(0, 0, 0, math.Pi/2)
-	fmt.Println(fmt.Sprintf("%s: %72.62fm\n    bearing %f", "O to {0, 90}", s, azimuthToDeg(faz)))
-
-	s, faz, _ = wgs84.Inverse(0, 0, math.Pi/2, 0)
-	fmt.Println(fmt.Sprintf("%s: %72.62fm\n    bearing %f", "O to N", s, azimuthToDeg(faz)))
-
-	lat2, lon2, _ := wgs84.Forward(rad(-22.2601287), rad(166.4732082), faz, s/2.0)
-	fmt.Println(fmt.Sprintf("%s: %f, %f", "Midpoint", deg(lat2), deg(lon2)))
-
 	doTriangle(
 		[]Coord{
 			{dallas_lat, dallas_lon, "Dallas"},

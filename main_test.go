@@ -3,10 +3,60 @@ package main
 import (
 	"fmt"
 	"github.com/lvdlvd/go-geo-wgs84"
+	"math"
 	"path/filepath"
 	"runtime"
 	"testing"
 )
+
+type TestBDEntry struct {
+	Start    Coord
+	Finish   Coord
+	Bearing  float64
+	Distance float64
+}
+
+const (
+	TestRadianAccuracy = 0.00175 // 0.1 degree
+	TestMeterAccuracy  = 0.1
+)
+
+var (
+	testBDEntries = []TestBDEntry{
+		TestBDEntry{Coord{-22.2601287, 166.4732082, "Noumea Magenta Airport, New Caledonia"},
+			Coord{-23.4337870964, 173.6461697836, "Dec 2016 solstice subsolar point"},
+			Rad(101.4), 747510.6},
+		TestBDEntry{Coord{0.0, 0.0, "O"}, Coord{0.0, 90.0, "E"}, math.Pi / 2, 10018754.2},
+		TestBDEntry{Coord{0.0, 0.0, "O"}, Coord{90.0, 0.0, "N"}, 0.0, 10001965.7},
+		TestBDEntry{Coord{32.7136391, -117.1622356, "San Diego"},
+			Coord{23.4345605, -130.8063276, "Jun 2018 solstice subsolar point"},
+			Rad(235.9 - 360.0), 1687281.6},
+	}
+)
+
+func bearingsEqual(lhs float64, rhs float64) bool {
+	return math.Abs(lhs-rhs) < TestRadianAccuracy
+}
+
+func distanceEqual(lhs float64, rhs float64) bool {
+	return math.Abs(lhs-rhs) < TestMeterAccuracy
+}
+
+func TestBearingAndDistance(t *testing.T) {
+	for _, x := range testBDEntries {
+		s, faz, _ := wgs84.Inverse(Rad(x.Start.Lat), Rad(x.Start.Lon), Rad(x.Finish.Lat), Rad(x.Finish.Lon))
+		fmt.Println(fmt.Sprintf("%s to %s: %fm\n    bearing %f",
+			x.Start.Name, x.Finish.Name, s, azimuthToDeg(faz)))
+		if !bearingsEqual(faz, x.Bearing) {
+			t.Errorf("Inaccurate Inverse bearing (%s to %s). Expected %f. Got %f.",
+				x.Start.Name, x.Finish.Name, x.Bearing, faz)
+		}
+		if !distanceEqual(s, x.Distance) {
+			t.Errorf("Inaccurate Inverse bearing (%s to %s). Expected %f. Got %f.",
+				x.Start.Name, x.Finish.Name, x.Distance, s)
+		}
+	}
+}
 
 func testNormalizeTriangle(triangle []Coord, answer []string, t *testing.T) {
 	if len(triangle) != 3 {
@@ -37,7 +87,7 @@ func testNormalizeTriangle(triangle []Coord, answer []string, t *testing.T) {
 				if len(test) != 3 {
 					t.Errorf("unexpected len %d %s", len(test), pdebug)
 				}
-				found := []string{test[0].name, test[1].name, test[2].name}
+				found := []string{test[0].Name, test[1].Name, test[2].Name}
 				if found[0] != answer[0] || found[1] != answer[1] || found[2] != answer[2] {
 					t.Errorf("bad normalize %s\n\tFound: %v\n\tExpected: %v", pdebug, found, answer)
 				}
@@ -90,11 +140,11 @@ func TestNormalizeTriangle(t *testing.T) {
 	testNormalizeTriangle([]Coord{{0, 0, "O"}, {0, 90, "OE"}, {90, 0, "N"}}, []string{"N", "OE", "O"}, t)
 	testNormalizeTriangle([]Coord{{10, 10, "A"}, {10, 10, "A2"}, {20, 20, "B"}}, []string{}, t)
 	testNormalizeTriangle([]Coord{{10, 10, "A"}, {10, 10, "A2"}, {20, 20, "B"}}, []string{}, t)
-	_, azi, _ := wgs84.Inverse(rad(dallas_lat), rad(dallas_lon), rad(san_antonio_lat), rad(san_antonio_lon))
+	_, azi, _ := wgs84.Inverse(Rad(dallas_lat), Rad(dallas_lon), Rad(san_antonio_lat), Rad(san_antonio_lon))
 	colinear := Coord{0, 0, "colinear"}
-	colinear.lat, colinear.lon, _ = wgs84.Forward(rad(dallas_lat), rad(dallas_lon), azi, 1000000.0)
-	colinear.lat = deg(colinear.lat)
-	colinear.lon = deg(colinear.lon)
+	colinear.Lat, colinear.Lon, _ = wgs84.Forward(Rad(dallas_lat), Rad(dallas_lon), azi, 1000000.0)
+	colinear.Lat = Deg(colinear.Lat)
+	colinear.Lon = Deg(colinear.Lon)
 	testNormalizeTriangle(
 		[]Coord{
 			{dallas_lat, dallas_lon, "Dallas"},

@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+type TestEntry struct {
+	Value        int
+	BinaryWeight int
+}
+
 var (
 	TestData = []TestEntry{
 		TestEntry{569162312, 14},

@@ -3,82 +3,87 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/lvdlvd/go-geo-wgs84"
 	"math"
 	"strings"
+
+	wgs84 "github.com/lvdlvd/go-geo-wgs84"
 )
 
 const (
-	dallas_lat      float64 = 32.776664
-	dallas_lon      float64 = -96.796988
-	houston_lat     float64 = 29.760427
-	houston_lon     float64 = -95.369803
-	san_antonio_lat float64 = 29.424122
-	san_antonio_lon float64 = -98.493628
+	dallasLat     float64 = 32.776664
+	dallasLon     float64 = -96.796988
+	houstonLat    float64 = 29.760427
+	houstonLon    float64 = -95.369803
+	sanAntonioLat float64 = 29.424122
+	sanAntonioLon float64 = -98.493628
 
 	// Result from computation in ellipse.go: eliminates overshoot.
 	compensationFactor float64 = 0.9983242984277140011446146599937898342419651738278666798238725123410681830530906421805472817806713887
 )
 
 var (
-	MaxIters int = 0
+	maxIters int
 )
 
+// Rad convert degrees to radians
 func Rad(deg float64) float64 {
 	return deg * (math.Pi / 180.0)
 }
 
+// Deg convert radians to degrees
 func Deg(rad float64) float64 {
 	return rad * (180.0 / math.Pi)
 }
 
+// Coord a named coordinate on the geoid
 type Coord struct {
 	Lat  float64
 	Lon  float64
 	Name string
 }
 
-// Tests if an azimuth is the range [-Pi, Pi)
+// IsAziNormal tests if an azimuth is the range [-Pi, Pi)
 func IsAziNormal(azi float64) bool {
 	return azi >= -math.Pi && azi <= math.Pi
 }
 
-// Tests if the Coord is normalized.
+// IsNormal tests if the Coord is normalized.
 // A normal coordinate's lat is in the range [-90, 90],
 // and its lon is in the range [-180, 180]
 func (c *Coord) IsNormal() bool {
 	return c.Lat <= 90.0 && c.Lat >= -90.0 && c.Lon <= 180.0 && c.Lon >= -180.0
 }
 
-// Tests if the Coord is on either pole
+// IsPolar tests if the Coord is on either pole
 func (c *Coord) IsPolar() bool {
 	return math.Abs(c.Lat) == 90.0
 }
 
-// Tests if this Coord is identical to a second
+// Equal tests if this Coord is identical to a second
 // All pairs of non-Equal, non-antipodal points have exactly one geodesic
-func (lhs *Coord) Equal(rhs *Coord) bool {
-	return lhs.Lat == rhs.Lat && lhs.Lon == rhs.Lon
+func (c *Coord) Equal(rhs *Coord) bool {
+	return c.Lat == rhs.Lat && c.Lon == rhs.Lon
 }
 
-// Tests if this Coord is antipodal with a second Coord.
+// IsAntipodal tests if this Coord is antipodal with a second Coord.
 // All pairs of non-Equal, non-antipodal points have exactly one geodesic
-func (lhs *Coord) IsAntipodal(rhs *Coord) bool {
-	if lhs.Lat+rhs.Lat == 0.0 {
-		if math.Abs(lhs.Lat) == 90.0 {
+func (c *Coord) IsAntipodal(rhs *Coord) bool {
+	if c.Lat+rhs.Lat == 0.0 {
+		if math.Abs(c.Lat) == 90.0 {
 			return true
 		}
-		return math.Abs(lhs.Lon-rhs.Lon) == 180.0
+		return math.Abs(c.Lon-rhs.Lon) == 180.0
 	}
 	return false
 }
 
-func (this *Coord) Antipode() (antipode *Coord) {
-	antipode.Lat = -this.Lat
-	if this.Lon < 0.0 {
-		antipode.Lon = this.Lon + 180.0
+// Antipode returns the antipodal coordinate
+func (c *Coord) Antipode() (antipode *Coord) {
+	antipode.Lat = -c.Lat
+	if c.Lon < 0.0 {
+		antipode.Lon = c.Lon + 180.0
 	} else {
-		antipode.Lon = this.Lon - 180.0
+		antipode.Lon = c.Lon - 180.0
 	}
 	return
 }
@@ -363,8 +368,8 @@ func triangleCircumcenter(t []Coord) (coord Coord, err error) {
 		sAC, azac, azca := wgs84.Inverse(m12lat, m12lon, m01lat, m01lon)
 		A := math.Abs(m21azi - azac)
 		C := math.Abs(m10azi - azca)
-		if count > MaxIters {
-			MaxIters = count
+		if count > maxIters {
+			maxIters = count
 		}
 		if count > 10 {
 			err = errors.New("endless")
@@ -402,9 +407,9 @@ func main() {
 	calculateEarthParameters()
 	doTriangle(
 		[]Coord{
-			{dallas_lat, dallas_lon, "Dallas"},
-			{houston_lat, houston_lon, "Houston"},
-			{san_antonio_lat, san_antonio_lon, "San Antonio"},
+			{dallasLat, dallasLon, "Dallas"},
+			{houstonLat, houstonLon, "Houston"},
+			{sanAntonioLat, sanAntonioLon, "San Antonio"},
 		})
 	doTriangle(
 		[]Coord{
@@ -418,5 +423,5 @@ func main() {
 			{37.7577, -122.4376, "San Francisco"},
 			{47.61302845, -122.3420645, "Seattle"},
 		})
-	fmt.Printf("MaxIters = %d\n", MaxIters)
+	fmt.Printf("maxIters = %d\n", maxIters)
 }

@@ -12,9 +12,9 @@ const canonicalPi = "3.141592653589793238462643383279502884197169399375105820974
 func TestRatPi(t *testing.T) {
 	var pi big.Rat
 	RatPi(&pi)
-	precision := int(math.Floor((math.Log(16) * float64((len(PiBytes)-1)*2) / math.Log(10)) + 0.5))
+	precision := int(math.Floor((math.Log(16) * float64((len(piBytes)-1)*2) / math.Log(10)) + 0.5))
 	if precision+2 > len(canonicalPi) {
-		fmt.Errorf("Insufficient precision in canonicalPi to test. Need %d digits. Have %d.\n", precision,
+		t.Errorf("Insufficient precision in canonicalPi to test. Need %d digits. Have %d.\n", precision,
 			len(canonicalPi)-2)
 	}
 	guess := pi.FloatString(precision)

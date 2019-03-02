@@ -11,7 +11,7 @@ func A048881(n int64) int {
 	return PopCount(n+1) - 1
 }
 
-//A000108     Catalan numbers: C(n) = binomial(2n,n)/(n+1) = (2n)!/(n!(n+1)!)
+//Catalan [A000108]     Catalan numbers: C(n) = binomial(2n,n)/(n+1) = (2n)!/(n!(n+1)!)
 func Catalan(n int) *big.Int {
 	z := new(big.Int)
 	z.Binomial(int64(n)*2, int64(n))
@@ -26,7 +26,7 @@ func A002596(n int) *big.Int {
 	if n < 2 {
 		return big.NewInt(1)
 	}
-	n -= 1
+	n--
 	c := Catalan(n)
 	var denom big.Int
 	denom.SetBit(&denom, A048881(int64(n)), 1)
@@ -47,22 +47,24 @@ func A056981(n int) *big.Int {
 func A005187(n int) int {
 	if n <= 0 {
 		return 0
-	} else {
-		return A005187(n/2) + n
 	}
+	return A005187(n/2) + n
 }
 
-//A056982		a(n) = 4^A005187(n)
+//A056982 a(n) = 4^A005187(n)
 func A056982(n int) *big.Int {
 	c := big.NewInt(0)
 	return c.SetBit(c, A005187(n)*2, 1)
 }
 
+// KummerGaussTerm returns the n-th term of the Kummer-Gauss series
 func KummerGaussTerm(n int) *big.Rat {
 	r := new(big.Rat)
 	return r.SetFrac(A056981(n), A056982(n))
 }
 
+// RatKummerGauss provides an estimate of the perimeter of an ellipse with a given h-ratio
+// It sums the first 100 terms of the Kummer-Gauss series.
 func RatKummerGauss(h *big.Rat) *big.Rat {
 	hProd := big.NewRat(1, 1)
 	sum := big.NewRat(0, 1)
@@ -77,6 +79,8 @@ func RatKummerGauss(h *big.Rat) *big.Rat {
 	return sum
 }
 
+// EllipsePerimeterPrecise uses rationals to calculate the perimeter of an ellipse
+// with radii a and b, then returns the result as a float64.
 func EllipsePerimeterPrecise(a float64, b float64) float64 {
 	var aRat big.Rat
 	var bRat big.Rat
@@ -88,6 +92,7 @@ func EllipsePerimeterPrecise(a float64, b float64) float64 {
 	return res
 }
 
+// RatEllipsePerimeter retains the ellipe perimeter as a Rat
 func RatEllipsePerimeter(aRat *big.Rat, bRat *big.Rat) *big.Rat {
 	var tmp big.Rat
 	var diff big.Rat
@@ -109,6 +114,8 @@ func RatEllipsePerimeter(aRat *big.Rat, bRat *big.Rat) *big.Rat {
 	return kg
 }
 
+// CircumferencePrecise uses rationals to calculate the circumference of
+// a circle with radius r, then returns the result as a float64
 func CircumferencePrecise(r float64) float64 {
 	var rRat big.Rat
 
@@ -118,6 +125,8 @@ func CircumferencePrecise(r float64) float64 {
 	return res
 }
 
+// RatCircumference calculates the circumference of a circle with
+// radius rRat
 func RatCircumference(rRat *big.Rat) *big.Rat {
 	var piRat big.Rat
 
@@ -130,10 +139,10 @@ func RatCircumference(rRat *big.Rat) *big.Rat {
 
 func calculateEarthParameters() {
 	aRat := new(big.Rat)
-	aRat.SetFloat64(WGS84_a)
+	aRat.SetFloat64(WGS84A)
 	ep := RatCircumference(aRat)
 	bRat := new(big.Rat)
-	bRat.SetFloat64(WGS84_b)
+	bRat.SetFloat64(WGS84B)
 	pp := RatEllipsePerimeter(aRat, bRat)
 	factor := big.NewRat(1, 4)
 	ep.Mul(ep, factor)

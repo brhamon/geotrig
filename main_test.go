@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/lvdlvd/go-geo-wgs84"
 	"math"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	wgs84 "github.com/lvdlvd/go-geo-wgs84"
 )
 
 type TestBDEntry struct {
@@ -104,9 +105,9 @@ func testNormalizeTriangle(triangle []Coord, answer []string, t *testing.T) {
 func TestNormalizeTriangle(t *testing.T) {
 	testNormalizeTriangle(
 		[]Coord{
-			{dallas_lat, dallas_lon, "Dallas"},
-			{houston_lat, houston_lon, "Houston"},
-			{san_antonio_lat, san_antonio_lon, "San Antonio"},
+			{dallasLat, dallasLon, "Dallas"},
+			{houstonLat, houstonLon, "Houston"},
+			{sanAntonioLat, sanAntonioLon, "San Antonio"},
 		},
 		[]string{
 			"Dallas",
@@ -140,15 +141,15 @@ func TestNormalizeTriangle(t *testing.T) {
 	testNormalizeTriangle([]Coord{{0, 0, "O"}, {0, 90, "OE"}, {90, 0, "N"}}, []string{"N", "OE", "O"}, t)
 	testNormalizeTriangle([]Coord{{10, 10, "A"}, {10, 10, "A2"}, {20, 20, "B"}}, []string{}, t)
 	testNormalizeTriangle([]Coord{{10, 10, "A"}, {10, 10, "A2"}, {20, 20, "B"}}, []string{}, t)
-	_, azi, _ := wgs84.Inverse(Rad(dallas_lat), Rad(dallas_lon), Rad(san_antonio_lat), Rad(san_antonio_lon))
+	_, azi, _ := wgs84.Inverse(Rad(dallasLat), Rad(dallasLon), Rad(sanAntonioLat), Rad(sanAntonioLon))
 	colinear := Coord{0, 0, "colinear"}
-	colinear.Lat, colinear.Lon, _ = wgs84.Forward(Rad(dallas_lat), Rad(dallas_lon), azi, 1000000.0)
+	colinear.Lat, colinear.Lon, _ = wgs84.Forward(Rad(dallasLat), Rad(dallasLon), azi, 1000000.0)
 	colinear.Lat = Deg(colinear.Lat)
 	colinear.Lon = Deg(colinear.Lon)
 	testNormalizeTriangle(
 		[]Coord{
-			{dallas_lat, dallas_lon, "Dallas"},
-			{san_antonio_lat, san_antonio_lon, "San Antonio"},
+			{dallasLat, dallasLon, "Dallas"},
+			{sanAntonioLat, sanAntonioLon, "San Antonio"},
 			colinear,
 		},
 		[]string{}, t)

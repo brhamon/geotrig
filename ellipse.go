@@ -5,14 +5,21 @@ import (
 )
 
 const (
-	// Citation: http://earth-info.nga.mil/GandG/publications/tr8350.2/wgs84fin.pdf
-	// see Tables 3.1 and 3.3
-	WGS84_b float64 = 6356752.3142
-	WGS84_a float64 = 6378137.0
-	WGS84_f float64 = 298.257223563
+	// WGS84B is the distance in meters from the Earth's centroid to the poles
+	// (citation: http://earth-info.nga.mil/GandG/publications/tr8350.2/wgs84fin.pdf
+	// see Tables 3.1 and 3.3)
+	WGS84B float64 = 6356752.3142
+
+	// WGS84A is the distance in meters from the Earth's centroid to the equator
+	WGS84A float64 = 6378137.0
+
+	// WGS84F is the flattening factor
+	WGS84F float64 = 298.257223563
 )
 
 var (
+	// KGTerm is an array of Kummer-Gauss terms expressed as float64
+	// Note that the precision of the constants exceeds that of float64.
 	KGTerm = []float64{
 		1.0,
 		0.25,
@@ -117,6 +124,7 @@ var (
 	}
 )
 
+// KummerGauss calculates the perimeter of an ellipse with h
 func KummerGauss(h float64) (sum float64) {
 	var hProd float64 = 1
 	sum = 0
@@ -129,6 +137,7 @@ func KummerGauss(h float64) (sum float64) {
 	return
 }
 
+// EllipsePerimeter calculates the perimeter of an ellipse with major and minor radii a and b
 func EllipsePerimeter(a float64, b float64) float64 {
 	diff := a - b
 	sum := a + b
